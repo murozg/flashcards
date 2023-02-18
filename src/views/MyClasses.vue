@@ -3,6 +3,7 @@ import MyModal from "../components/MyModal.vue";
 import ListItem from "../components/ListItem.vue";
 import MyToolbar from "../components/MyToolbar.vue";
 import MyFab from "../components/MyFab.vue";
+import MyTreeView from "../components/MyTreeView.vue";
 export default {
   inject: ["dataService"],
   components: {
@@ -10,6 +11,7 @@ export default {
     MyFab,
     ListItem,
     MyModal,
+    MyTreeView,
   },
   data() {
     return {
@@ -74,6 +76,28 @@ export default {
 <template>
   <div class="wrapper">
     <my-toolbar up="" title="Derslerim" />
+    <my-tree-view
+      :nodes="[
+        {
+          id: 0,
+          level: 0,
+          title: 'test1',
+          children: [
+            { id: 0, level: 1, title: 'test1', children: [] },
+            { id: 1, level: 1, title: 'test2', children: [] },
+          ],
+        },
+        {
+          id: 1,
+          level: 0,
+          title: 'test2',
+          children: [
+            { id: 0, level: 1, title: 'test1', children: [] },
+            { id: 1, level: 1, title: 'test2', children: [] },
+          ],
+        },
+      ]"
+    ></my-tree-view>
     <div class="list">
       <div v-for="item in myClasses" :key="item.id" class="list">
         <list-item
