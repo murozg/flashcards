@@ -79,21 +79,21 @@ export default {
     <my-tree-view
       :nodes="[
         {
-          id: 0,
+          id: -1,
           level: 0,
           title: 'test1',
           children: [
-            { id: 0, level: 1, title: 'test1', children: [] },
-            { id: 1, level: 1, title: 'test2', children: [] },
+            { id: 1, level: 1, title: 'test1', children: [] },
+            { id: 2, level: 1, title: 'test2', children: [] },
           ],
         },
         {
-          id: 1,
+          id: 3,
           level: 0,
           title: 'test2',
           children: [
-            { id: 0, level: 1, title: 'test1', children: [] },
-            { id: 1, level: 1, title: 'test2', children: [] },
+            { id: 4, level: 1, title: 'test1', children: [] },
+            { id: 5, level: 1, title: 'test2', children: [] },
           ],
         },
       ]"

@@ -19,17 +19,17 @@ export default {
 
   data() { return {
     items: [],
-    isInserting: false,
     inserting: null,
-    editText: null,
     adder: null,
-    maxId: 0,
+    maxId: 8,
   }},
 
   methods: {
     toggle: function(item) {
-      if (this.isInserting) {
-        this.saveOrCancel(this.inserting)
+      if (this.inserting) {
+        this.saveOrCancel()
+        this.$refs.input.style.visibility = "hidden"
+        this.inserting = null
       }
       item.expanded = !item.expanded
       let n = this.items.indexOf(item)
@@ -53,13 +53,28 @@ export default {
           this.items.splice(n + 1, count)
         }
       }
-      
     },
-    insert: function(item) {
-      if (this.isInserting) {
-        this.saveOrCancel(this.inserting)
+
+    setLeft: function(level) {
+      this.$refs.input.style.left = level * 40 + "px"
+    },
+
+    insert: function(e, item) {
+      this.setLeft(item.level)
+      let top = 1
+      if (this.inserting && !this.$refs.input.value) {
+        if(this.items.indexOf(this.inserting) < this.items.indexOf(item)) {
+          top = 0
+        }
       }
-      this.isInserting = true
+      if (item.expanded) {
+        top += item.children.length 
+      }
+      this.saveOrCancel()
+      this.$refs.input.style.top = e.target.offsetTop + e.target.offsetHeight * top + "px"
+      this.$refs.input.style.visibility = "visible"
+      this.$refs.input.focus()
+      this.$refs.input.value = ""
       this.inserting = {
         id:0,
         title:null,
@@ -75,56 +90,48 @@ export default {
         }
       this.items.splice(i, 0, this.inserting)
       this.adder = item
-      this.inserting.editing = true
     },
 
-    saveItem: function(item) {
+    saveItem: function() {
+      let item = this.inserting
       if (item.id == 0) {
         item.id = this.maxId
+        this.maxId++
       }
-      item.title = this.editText
-      this.editText = null
-      item.editing = null
-      this.isInserting = false
+      item.title = this.$refs.input.value
       if (item.parent) {
         let siblings = item.parent.children
         if (!siblings) {
           return
         }
-        siblings.splice(siblings.indexOf(this.inserting.nextTo), 0, item)
+        siblings.splice(siblings.indexOf(this.inserting.nextTo) + 1, 0, item)
       }
-      this.inserting = null
     },
 
-    addItem: function(item) {
+    addItem: function() {
+      let item = this.inserting
       if (item.level != this.adder.level) {
         this.adder.expanded = true
       }
-      this.saveItem(item)
-      this.insert(item)
+      this.saveItem()
+      this.insert({target: this.$refs.input}, item)
     },
 
-    cancelEditing: function(item) {
-      this.items.splice(this.items.indexOf(item), 1)
-      this.isInserting = false
-    },
-
-    saveOrCancel: function(item) {
-      this.isInserting = false
-      this.inserting = null
-      if(this.editText != "" && this.editText != null) {
-        this.saveItem(item)
+    saveOrCancel: function() {
+      if (!this.inserting) {
+        return
+      }
+      let val = this.$refs.input.value
+      if(val != "" && val != null) {
+        this.saveItem()
       }
       else {
-          this.cancelEditing(item)
+        this.items.splice(this.items.indexOf(this.inserting), 1)
       }
     },
 
-    textChanged(e) {
-      this.editText = e.target.value
-    },
-
-    switchLevel(e, item){
+    switchLevel(e){
+      let item = this.inserting
       if (item.id) {
         this.saveOrCancel(item)
         return
@@ -143,6 +150,7 @@ export default {
         item.level--
         item.parent = upper.parent
       }
+      this.setLeft(item.level)
     }
   },
 
@@ -161,7 +169,6 @@ export default {
 
   created() {
     this.items = this.nodes
-    //this.flatten(this.nodes, 0)
   },
 
   mounted() {
@@ -180,21 +187,44 @@ export default {
 </script>
 <!-- eslint-disable prettier/prettier -->
 <template>
-    <div v-for="item in items" :key="item.id"
+    <div class="item" v-for="item in items" :key="item.id"
         :style="'margin-left: ' + item.level * 40 +'px;text-align:left;'">
         <button v-if="item.children?.length > 0" @click="toggle(item)">
             {{ item.expanded ? "V" : ">" }}
         </button>
-        <input v-focus v-if="item.editing" type="text" :value="item.title"
-            @input="textChanged" @keyup.enter.prevent="addItem(item)"
-            @keyup.esc.prevent="cancelEditing(item)"
-            @keydown.tab="switchLevel($event, item)"/>
-        <span v-else>{{ item.title }}
-            <a @click="insert(item)">+</a>
-        </span>
+        <div class="title">{{ item.title }}</div>
+        <button @click="insert($event, item)">+</button>
     </div>
+    <input v-focus class="tree-container" ref="input" type="text"
+            style="visibility: hidden;"
+            @keyup.enter.prevent="addItem()"
+            @keyup.esc.prevent="cancelEditing()"
+            @keydown.tab="switchLevel($event)"/>
 </template>
 <!-- eslint-disable prettier/prettier -->
 <style>
+.tree-container {
+  position: absolute;
+  z-index: 5;
+}
+.item {
+  display: flex;
 
+}
+.item div{
+  width: 500px;
+  margin-right: 1rem;
+
+}
+button:first-child {
+  margin-right: 4px;
+}
+button:last-child {
+  margin-left: 4px;
+}
+.item input{
+  margin-right: 1rem;
+  padding: 4px;
+
+}
 </style>
