@@ -10,5 +10,4 @@ app.directive("focus", {
 app.config.compilerOptions.isCustomElement = (tag) => {
   return tag.startsWith("my-");
 };
-console.log("sonarqube test");
 app.use(router).mount("#app");
